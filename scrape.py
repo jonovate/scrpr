@@ -131,7 +131,7 @@ def lambda_handler(event, context):
 
 def send_email(subject, body):
     try:
-        msg = EmailMessage(s)
+        msg = EmailMessage()
         msg["From"] = formataddr(("SCRPR Tool", SMTP_FROM))
         msg["To"] = SMTP_TO
         msg["Subject"] = subject
