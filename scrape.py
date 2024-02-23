@@ -114,6 +114,8 @@ def get_remote_firefox_driver():
 
 def lambda_handler(event, context):
 
+    print("Starting check...")
+    
     if USE_REMOTE_WEBDRIVER and REMOTE_TYPE == 'firefox':
         driver = get_remote_firefox_driver()
     elif not USE_REMOTE_WEBDRIVER and REMOTE_TYPE == 'firefox':
@@ -124,7 +126,8 @@ def lambda_handler(event, context):
         driver = get_local_chrome_driver()
     else:
         raise Exception("No driver")
-    
+
+    print(f"Calling {url}...")
     driver.get(URL)
     WebDriverWait(driver, 15).until(
         lambda driverx: driverx.execute_script("return document.readyState")
