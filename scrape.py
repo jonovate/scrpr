@@ -9,10 +9,8 @@ from bs4 import BeautifulSoup
 import requests
 
 # Configuration from Environment Variables
-URL = os.getenv(
-    "URL", "https://www.costco.com/CategoryDisplay?identifier=sports-memorabilia"
-)
-MARKING_ID = os.getenv("MARKING_ID", "productTile_4000243854")
+URL = os.getenv("URL")
+MARKING_ID = os.getenv("MARKING_ID")
 REMEMBER_CHANGES = os.getenv("REMEMBER_CHANGES", "1") in (True, "true", "True", "1", 1)
 
 SMTP_USERNAME = os.getenv("SMTP_USERNAME")
