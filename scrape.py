@@ -127,7 +127,7 @@ def lambda_handler(event, context):
     else:
         raise Exception("No driver")
 
-    print(f"Calling {URL}...")
+    print(f"Calling {[URL]}...")
     driver.get(URL)
     WebDriverWait(driver, 15).until(
         lambda driverx: driverx.execute_script("return document.readyState")
@@ -160,7 +160,7 @@ def lambda_handler(event, context):
                         print("New product still up, no change detected")
                     else:
                         print(f"Product found: {name}")
-                        print(f"\turl: {url}")
+                        print(f"\turl: [{url}]")
                         # print(div)
                         body_format = f"{url}\r\n\r\n*****\r\n{div}\r\n*****"
                         send_email(f"*** COSTCO Product: {name}", body_format)
