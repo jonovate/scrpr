@@ -160,6 +160,7 @@ def lambda_handler(event, context):
                         print("New product still up, no change detected")
                     else:
                         print(f"Product found: {name}")
+                        print(f"\turl: {url}")
                         # print(div)
                         body_format = f"{url}\r\n\r\n*****\r\n{div}\r\n*****"
                         send_email(f"*** COSTCO Product: {name}", body_format)
