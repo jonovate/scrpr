@@ -7,6 +7,8 @@ services:
     restart: always
     depends_on:
       - webdriver
+    links:
+      - webdriver
   webdriver:
     image: selenium/standalone-firefox
     container_name: selenium
