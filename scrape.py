@@ -134,6 +134,8 @@ def lambda_handler(event, context):
     if driver.page_source:
         soup = BeautifulSoup(driver.page_source, "html.parser")
         try:
+            driver.quit()
+            
             parent_div = soup.find("div", {"class": "product-list"})
             target_divs = parent_div.find_all("div", {"class": "product-tile-set"})
             marker_not_found = True
