@@ -127,7 +127,7 @@ def lambda_handler(event, context):
     else:
         raise Exception("No driver")
 
-    print(f"Calling {url}...")
+    print(f"Calling {URL}...")
     driver.get(URL)
     WebDriverWait(driver, 15).until(
         lambda driverx: driverx.execute_script("return document.readyState")
