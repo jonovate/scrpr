@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  scrpr:
+    image: scrpr:latest
+    build: .
+    env_file: .env
+    restart: always
+    volumes:
+      - ./user-agents.json:/usr/src/app/user-agents.json
