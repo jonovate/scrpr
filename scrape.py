@@ -108,9 +108,9 @@ def lambda_handler(event, context):
                     else:
                         print(f"Product found: {name}")
                         #print(div)
-                        write_lock(url)
                         body_format = f"{url}\r\n\r\n*****\r\n{div}\r\n*****"
                         send_email(f"*** COSTCO Product: {name}", body_format)
+                        write_lock(url)
 
             if marker_not_found:
                 print(f"Marking product not found")
