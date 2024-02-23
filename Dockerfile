@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y cron vim
 COPY requirements.txt ./
 RUN pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && rm requirements.txt
 
-COPY scrape.py entrypoint.sh user-agents.json ./
+COPY scrape.py entrypoint.sh ./
 RUN chmod +x entrypoint.sh
 
 # Run the command on container startup

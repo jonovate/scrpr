@@ -5,5 +5,12 @@ services:
     build: .
     env_file: .env
     restart: always
-    volumes:
-      - ./user-agents.json:/usr/src/app/user-agents.json
+    depends_on:
+      - webdriver
+  webdriver:
+    image: selenium/standalone-firefox
+    container_name: selenium
+    ports:
+      - "4444:4444"
+    expose: 
+      - 4444

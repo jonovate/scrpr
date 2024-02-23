@@ -2,8 +2,8 @@ Detects new addition to a website page and notifies via email.
 
 (Hacked together ; no judging)
 
+Notes: First tried with Requests but some sites dynamically add content later
 
 ```
-docker build -t scrpr . 
-docker run -d --env-file .env scrpr
+docker-compose up -d
 ```

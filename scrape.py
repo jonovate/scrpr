@@ -1,17 +1,26 @@
 import os
-import json
-import random
 import smtplib
 from email.utils import formataddr
 from email.message import EmailMessage
 
 from bs4 import BeautifulSoup
-import requests
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
 
 # Configuration from Environment Variables
 URL = os.getenv("URL")
 MARKING_ID = os.getenv("MARKING_ID")
 REMEMBER_CHANGES = os.getenv("REMEMBER_CHANGES", "1") in (True, "true", "True", "1", 1)
+
+USE_REMOTE_WEBDRIVER = os.getenv("USE_REMOTE_WEBDRIVER", "1") in (
+    True,
+    "true",
+    "True",
+    "1",
+    1,
+)
+REMOTE_TYPE = os.getenv("REMOTE_TYPE")
+REMOTE_WEBDRIVER = os.getenv("REMOTE_WEBDRIVER")
 
 SMTP_USERNAME = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
@@ -19,22 +28,6 @@ SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT = os.getenv("SMTP_PORT")
 SMTP_FROM = os.getenv("SMTP_FROM")
 SMTP_TO = os.getenv("SMTP_TO")
-
-
-### USER AGENTS  ###
-def load_user_agents(file_path):
-    try:
-        with open(file_path, "r", encoding="UTF-8") as file:
-            data = json.load(file)
-            return [item["ua"] for item in data]
-    except FileNotFoundError:
-        print("User-Agents file not found")
-        return []
-
-
-USER_AGENTS_FILE = "user-agents.json"
-USER_AGENTS = load_user_agents(USER_AGENTS_FILE)
-### / USER AGENTS ###
 
 
 ### LOCK FILE ###
@@ -73,18 +66,73 @@ LOCK_FILE = ".scrplock"
 ### / LOCK FILE ###
 
 
+### SELENIUM DRIVERS ###
+def get_local_chrome_driver():
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.chrome.service import Service as ChromeService
+    from webdriver_manager.chrome import ChromeDriverManager
+
+    options = Options()
+    options.add_argument("--headless")
+
+    return webdriver.Chrome(
+        service=ChromeService(ChromeDriverManager().install(), options=options)
+    )
+
+def get_local_firefox_driver():
+    from selenium.webdriver.firefox.options import Options
+    from selenium.webdriver.firefox.service import Service as FirefoxService
+    from webdriver_manager.firefox import GeckoDriverManager
+
+    options = Options()
+    options.add_argument("-headless")
+
+    return webdriver.Firefox(
+        service=FirefoxService(GeckoDriverManager().install(), options=options)
+    )
+
+def get_remote_chrome_driver():
+    from selenium.webdriver.chrome.options import Options
+    
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--no-sandbox')
+
+    return webdriver.Remote(command_executor=REMOTE_WEBDRIVER, options=options)
+
+def get_remote_firefox_driver():
+    from selenium.webdriver.firefox.options import Options
+    
+    options = Options()
+    options.add_argument('-headless')
+
+    return webdriver.Remote(command_executor=REMOTE_WEBDRIVER, options=options)
+
+### / SELENIUM DRIVERS ###
+
+
 def lambda_handler(event, context):
-    if not USER_AGENTS:
-        print("No User-Agents available. Exiting.")
-        return
 
-    headers = {"User-Agent": random.choice(USER_AGENTS)}
-    print(headers)
+    if USE_REMOTE_WEBDRIVER and REMOTE_TYPE == 'firefox':
+        driver = get_remote_firefox_driver()
+    elif not USE_REMOTE_WEBDRIVER and REMOTE_TYPE == 'firefox':
+        driver = get_local_firefox_driver()
+    elif USE_REMOTE_WEBDRIVER and REMOTE_TYPE == 'chrome':
+        driver = get_remote_chrome_driver()
+    elif not USE_REMOTE_WEBDRIVER and REMOTE_TYPE == 'chrome':
+        driver = get_local_chrome_driver()
+    else:
+        raise Exception("No driver")
+    
+    driver.get(URL)
+    WebDriverWait(driver, 15).until(
+        lambda driverx: driverx.execute_script("return document.readyState")
+        == "complete"
+    )
 
-    response = requests.get(URL, headers=headers, timeout=10)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, "html.parser")
-
+    if driver.page_source:
+        soup = BeautifulSoup(driver.page_source, "html.parser")
         try:
             parent_div = soup.find("div", {"class": "product-list"})
             target_divs = parent_div.find_all("div", {"class": "product-tile-set"})
@@ -107,7 +155,7 @@ def lambda_handler(event, context):
                         print("New product still up, no change detected")
                     else:
                         print(f"Product found: {name}")
-                        #print(div)
+                        # print(div)
                         body_format = f"{url}\r\n\r\n*****\r\n{div}\r\n*****"
                         send_email(f"*** COSTCO Product: {name}", body_format)
                         write_lock(url)
