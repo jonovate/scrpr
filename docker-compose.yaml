@@ -10,7 +10,5 @@ services:
   webdriver:
     image: selenium/standalone-firefox
     container_name: selenium
-    ports:
-      - "4444:4444"
     expose: 
       - 4444
