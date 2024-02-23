@@ -4,7 +4,7 @@ CRON_LOG=/var/log/cron.log
 touch $CRON_LOG
 
 CRON_SCHEDULE="*/3 * * * *"
-CRON_JOB="/usr/local/bin/python3 /usr/src/app/scrape.py >> /var/log/cron.log 2>&1"
+CRON_JOB="cd /usr/src/app/ && /usr/local/bin/python3 scrape.py >> /var/log/cron.log 2>&1"
 
 CRONTAB_CONTENT=$(crontab -l 2>/dev/null)
 if [ $? -eq 0 ]; then
